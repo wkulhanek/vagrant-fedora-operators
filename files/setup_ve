@@ -1,0 +1,11 @@
+#!/bin/bash
+# Usage: setup_ve Project
+#   This will set up a Python Virtual Environment in $HOME/Project
+
+mkdir -p $HOME/$1
+virtualenv $HOME/$1
+source $HOME/$1/bin/activate
+pip install openshift
+pip install ansible
+pip install ansible-runner
+pip install ansible-runner-http

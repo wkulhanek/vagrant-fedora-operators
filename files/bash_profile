@@ -1,0 +1,14 @@
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+
+# User specific environment and startup programs
+GOPATH=$HOME/gopath
+
+PATH=$PATH:$HOME/bin:/usr/local/bin:$GOPATH/bin
+
+export GOPATH
+export PATH
