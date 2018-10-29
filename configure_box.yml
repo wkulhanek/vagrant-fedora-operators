@@ -152,6 +152,9 @@
       state: present
       name:
       - virtualenv
+      - openshift
+      - ansible-runner
+      - ansible-runner-http
 
   - name: Copy setup_ve script
     copy:
