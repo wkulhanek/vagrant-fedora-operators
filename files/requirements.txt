@@ -1,0 +1,4 @@
+ansible
+openshift
+ansible-runner
+ansible-runner-http

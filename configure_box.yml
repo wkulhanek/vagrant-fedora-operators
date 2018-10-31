@@ -15,17 +15,17 @@
       name:
         - git
         - skopeo
-        - buildah
-        - maven
-        - java-1.8.0-openjdk-devel
-        - ansible
-        - podman
-        - libselinux-python
         - cri-o
         - cri-tools
+        - buildah
+        - podman
+#        - libselinux-python
         - vim
         - golang
+        - python
         - python-devel
+        - python3
+        - python3-devel
         - dnf-plugins-core
 
   - name: Enable Docker-CE
@@ -45,8 +45,9 @@
       groups: docker
       append: True
 
-  - name: Downloaded OpenShift Origin Client
+  - name: Install OpenShift Origin Client
     unarchive:
+      creates: /usr/local/bin/oc
       src: https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz
       remote_src: yes
       dest: /usr/local/bin
@@ -56,15 +57,15 @@
       extra_opts:
         - --strip=1
 
-  - name: Download jq-linux64 1.5
-    ignore_errors: true
+  - name: Install jq
     get_url:
       url: https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
       dest: /usr/local/bin/jq
       mode: 0755
 
-  - name: Install S2I Executable
+  - name: Install S2I
     unarchive:
+      creates: /usr/local/bin/s2i
       src: https://github.com/openshift/source-to-image/releases/download/v1.1.12/source-to-image-v1.1.12-2a783420-linux-amd64.tar.gz
       remote_src: yes
       dest: /usr/local/bin
@@ -74,67 +75,57 @@
       extra_opts:
         - --strip=1
 
-  - name: Install OpenWhisk CLI (wsk)
-    unarchive:
-      src: https://github.com/projectodd/openwhisk-openshift/releases/download/latest/OpenWhisk_CLI-latest-linux-amd64.tgz
-      remote_src: yes
-      dest: /usr/local/bin
-      owner: root
-      group: root
-      mode: 0755
-
-  - name: Install bash-git-prompt for root
+  - name: Install bash-git-prompt
     git:
       repo: https://github.com/magicmonty/bash-git-prompt.git
-      dest: /root/.bash-git-prompt
+      dest: "{{ item }}/.bash-git-prompt"
       clone: yes
+    with_items:
+    - "/root"
+    - "/home/vagrant"
+    tags:
+    - install_bash_customization
 
-  - name: Install bash-git-prompt for vagrant
-    git:
-      repo: https://github.com/magicmonty/bash-git-prompt.git
-      dest: /home/vagrant/.bash-git-prompt
-      clone: yes
-
-  - name: Change ownership of bash-git-prompt to vagrant
+  - name: Change ownership of bash-git-prompt
     file:
-      path: /home/vagrant/.bash-git-prompt
-      owner: vagrant
-      group: vagrant
+      path: "{{ item.directory }}/.bash-git-prompt"
+      owner: "{{ item.user }}"
+      group: "{{ item.group }}"
       recurse: yes
+    with_items:
+    - { directory: "/root",         user: "root",     group: "root" }
+    - { directory: "/home/vagrant", user: "vagrant", group: "vagrant" }
+    tags:
+    - install_bash_customization
 
-  - name: Install .bashrc for root
+  - name: Install .bashrc
     copy:
-      src: ./files/bashrc
-      dest: /root/.bashrc
+      src: ../files/bashrc
+      dest: "{{ item.directory }}/.bashrc"
       mode: 0644
-      owner: root
-      group: root
+      owner: "{{ item.user }}"
+      group: "{{ item.group }}"
+    with_items:
+    - { directory: "/root",         user: "root",     group: "root" }
+    - { directory: "/home/vagrant", user: "vagrant", group: "vagrant" }
+    tags:
+    - install_bash_customization
 
-  - name: Install .bashrc for vagrant
+  - name: Install .bash_profile
     copy:
-      src: ./files/bashrc
-      dest: /home/vagrant/.bashrc
+      src: ../files/bash_profile
+      dest: "{{ item.directory }}/.bash_profile"
       mode: 0644
-      owner: vagrant
-      group: vagrant
-
-  - name: Install .bash_profile for root
-    copy:
-      src: ./files/bash_profile
-      dest: /root/.bash_profile
-      mode: 0644
-      owner: root
-
-  - name: Install .bash_profile for vagrant
-    copy:
-      src: ./files/bash_profile
-      dest: /home/vagrant/.bash_profile
-      mode: 0644
-      owner: vagrant
-      group: vagrant
+      owner: "{{ item.user }}"
+      group: "{{ item.group }}"
+    with_items:
+    - { directory: "/root",         user: "root",     group: "root" }
+    - { directory: "/home/vagrant", user: "vagrant", group: "vagrant" }
+    tags:
+    - install_bash_customization
 
   - name: Create /etc/containers/registries.conf
-    file:
+    copy:
       src: ./files/registries.conf
       dest: /etc/containers/registries.conf
       owner: root
@@ -152,28 +143,22 @@
       state: present
       name:
       - virtualenv
-      - openshift
-      - ansible-runner
-      - ansible-runner-http
 
-  - name: Copy setup_ve script
+  - name: Copy pip requirements file
     copy:
-      src: ./files/setup_ve
-      dest: /usr/local/bin/setup_ve
-      owner: root
-      group: root
-      mode: 0755
-
-  - name: Create Virtual Environment Top level Directory
-    file:
-      path: /home/vagrant/ve_home
-      state: directory
+      src: ./files/requirements.txt
+      dest: /tmp/requirements.txt
       owner: vagrant
       group: vagrant
-      mode: 0755
+      mode: 0664
 
-  - name: Create Virtual Environment
-    command: /usr/local/bin/setup_ve /home/vagrant/ve_home
+  - name: Install Python Packages into VirtualEnv
+    become: False
+    pip:
+      requirements: /tmp/requirements.txt
+      virtualenv: /home/vagrant/ve_home
+      virtualenv_python: python2.7
+#      virtualenv_python: python3.6
 
   - name: Download Go Dep
     get_url:
@@ -206,11 +191,10 @@
     environment:
       GOPATH: /home/vagrant/gopath
 
-  - name: Install Operatr SDK
+  - name: Install Operator SDK
     become: false
     command: make install
     args:
       chdir: /home/vagrant/gopath/src/github.com/operator-framework/operator-sdk
     environment:
       GOPATH: /home/vagrant/gopath
-
