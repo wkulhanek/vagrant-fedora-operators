@@ -19,7 +19,7 @@
         - cri-tools
         - buildah
         - podman
-#        - libselinux-python
+        - libselinux-python
         - vim
         - golang
         - python
