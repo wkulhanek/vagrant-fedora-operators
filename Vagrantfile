@@ -39,10 +39,6 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "%s.v" % hostname # domain postfix optional good for ssh "*.v" etc
   config.vm.network "private_network", ip: ip
 
-  # setup ssh keys, use own instead of allowing vagrant to generate one
-  config.ssh.insert_key = false
-  config.ssh.private_key_path = ssh_keys
-
   # setup any shared folders, set in global vars
   config.vm.synced_folder local_folder, remote_mount
 
