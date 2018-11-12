@@ -5,6 +5,11 @@ if [ -f ~/.bashrc ]; then
         . ~/.bashrc
 fi
 
+if [ -f /usr/local/bin/oc ]; then
+        oc completion bash >$HOME/.oc_completion.sh
+        source $HOME/.oc_completion.sh
+fi
+
 # User specific environment and startup programs
 GOPATH=$HOME/gopath
 
