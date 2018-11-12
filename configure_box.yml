@@ -26,6 +26,7 @@
         - python-devel
         - python3
         - python3-devel
+        - compat-openssl10
         - dnf-plugins-core
 
   - name: Enable Docker-CE
