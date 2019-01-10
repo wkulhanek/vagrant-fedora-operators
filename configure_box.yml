@@ -1,5 +1,5 @@
 ---
-# This Playbook sets up a Vagrant Fedora 28 VM
+# This Playbook sets up a Vagrant Fedora 29 VM
 - hosts: all
   gather_facts: false
   become: yes
@@ -68,7 +68,7 @@
   - name: Install S2I
     unarchive:
       creates: /usr/local/bin/s2i
-      src: https://github.com/openshift/source-to-image/releases/download/v1.1.12/source-to-image-v1.1.12-2a783420-linux-amd64.tar.gz
+      src: https://github.com/openshift/source-to-image/releases/download/v1.1.13/source-to-image-v1.1.13-b54d75d3-linux-amd64.tar.gz
       remote_src: yes
       dest: /usr/local/bin
       owner: root
@@ -159,8 +159,8 @@
     pip:
       requirements: /tmp/requirements.txt
       virtualenv: /home/vagrant/ve_home
-      virtualenv_python: python2.7
-#      virtualenv_python: python3.6
+#      virtualenv_python: python2.7
+      virtualenv_python: python3
 
   - name: Download Go Dep
     get_url:

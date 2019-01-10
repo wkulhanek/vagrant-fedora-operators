@@ -1,8 +1,8 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Fedora 28 Vagrant box:
-box = "generic/fedora28"
+# Fedora 29 Vagrant box:
+box = "generic/fedora29"
 
 # set to taste
 hostname = "fedoravm"
