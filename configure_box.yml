@@ -61,7 +61,7 @@
 
   - name: Install jq
     get_url:
-      url: https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
+      url: https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
       dest: /usr/local/bin/jq
       mode: 0755
 
@@ -159,7 +159,6 @@
     pip:
       requirements: /tmp/requirements.txt
       virtualenv: /home/vagrant/ve_home
-#      virtualenv_python: python2.7
       virtualenv_python: python3
 
   - name: Download Go Dep
@@ -178,25 +177,10 @@
       group: vagrant
       mode: 0755
 
-  - name: Install Operator Framework
-    become: false
-    git:
-      repo: https://github.com/operator-framework/operator-sdk
-      dest: /home/vagrant/gopath/src/github.com/operator-framework/operator-sdk
-      clone: yes
-
-  - name: Build Operator SDK
-    become: false
-    command: make dep
-    args:
-      chdir: /home/vagrant/gopath/src/github.com/operator-framework/operator-sdk
-    environment:
-      GOPATH: /home/vagrant/gopath
-
-  - name: Install Operator SDK
-    become: false
-    command: make install
-    args:
-      chdir: /home/vagrant/gopath/src/github.com/operator-framework/operator-sdk
-    environment:
-      GOPATH: /home/vagrant/gopath
+  - name: Download operator-sdk tool
+    get_url:
+      url: https://github.com/operator-framework/operator-sdk/releases/download/v0.5.0/operator-sdk-v0.5.0-x86_64-linux-gnu
+      dest: /usr/local/bin/operator-sdk
+      mode: 0755
+      owner: root
+      group: root
